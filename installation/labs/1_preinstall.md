@@ -8,6 +8,7 @@ cat /proc/sys/vm/swappiness
 echo 1 > /proc/sys/vm/swappiness
 ```
 Was 60, changed to 1.
+ATTENTION: It actually changes back to 60 after reboot!!! Could that be mentioned somewhere maybe??
 
 2. Show the mount attributes of all volumes
 ```
