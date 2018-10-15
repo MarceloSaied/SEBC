@@ -3,22 +3,11 @@ I have created a script that resides in installation/tools/checks.sh
 That script installs everything on the cleat Centos 6 machine I am using and produces the output. The commands I am listing here are all there - plus the installation.
 
 1. Check vm.swappiness on all your nodes, set the value to 1 if necessary
-
-I ran the script from installation/tools/script.sh
-
-sudo sh script.sh 172.31.35.4 ip-172-31-35-4
-
-from the output:
-
-"The current swappiness of the system is 60"
-
-It also gives other valuable results that I won't list here.
-
-In my checks.sh file I took the part from this script that deals with the swappiness:
 ```
 cat /proc/sys/vm/swappiness
 echo 1 > /proc/sys/vm/swappiness
 ```
+Was 60, changed to 1.
 
 2. Show the mount attributes of all volumes
 ```
