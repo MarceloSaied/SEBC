@@ -4,6 +4,8 @@ chkconfig ntpd on
 chkconfig nscd on
 service ntpd start
 service nscd start
+service iptables stop
+chkconfig iptables off
 echo -e "----------------------------------------------------------- checking -----------------------------------------------------------------------------\n"
 echo -e "\n1. Swappiness:"
 cat /proc/sys/vm/swappiness
