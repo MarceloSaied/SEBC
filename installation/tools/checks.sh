@@ -7,6 +7,7 @@ service nscd start
 echo -e "----------------------------------------------------------- checking -----------------------------------------------------------------------------\n"
 echo -e "\n1. Swappiness:"
 cat /proc/sys/vm/swappiness
+echo 'vw.swappiness=1' >> /etc/sysctl.conf
 echo 1 > /proc/sys/vm/swappiness
 echo -e "\nSwappiness changed to"
 cat /proc/sys/vm/swappiness
@@ -17,6 +18,8 @@ df -h
 echo -e "\n4. Disable transparent hugepage support"
 echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
 echo never > /sys/kernel/mm/redhat_transparent_hugepage/enabled
+echo "echo never > /sys/kernel/mm/transparent_hugepage/defrag" >> /etc/rc.d/rc.local
+echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.d/rc.local
 cat /sys/kernel/mm/transparent_hugepage/defrag
 cat /sys/kernel/mm/transparent_hugepage/enabled
 echo -e "\n5. List your network interface configuration"
