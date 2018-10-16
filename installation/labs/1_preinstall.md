@@ -22,10 +22,10 @@ none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
 ```
 3. Show the reserve space of any non-root, ext-based volumes
 ```
-[centos@ip-172-31-35-4 ~]$ sudo df -h
-Filesystem      Size  Used Avail Use% Mounted on
-/dev/xvda1      7.8G  857M  6.6G  12% /
-tmpfs           7.8G     0  7.8G   0% /dev/shm
+[root@ip-172-31-35-4 centos]# lsblk
+NAME    MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+xvda    202:0    0  30G  0 disk
+└─xvda1 202:1    0  30G  0 part /
 ```
 4. Disable transparent hugepage support
 ```
