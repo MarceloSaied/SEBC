@@ -5,10 +5,9 @@ That script installs everything on the cleat Centos 6 machine I am using and pro
 1. Check vm.swappiness on all your nodes, set the value to 1 if necessary
 ```
 cat /proc/sys/vm/swappiness
-echo 1 > /proc/sys/vm/swappiness
+sysctl -w vm.swappiness=1
 ```
 Was 60, changed to 1.
-ATTENTION: It actually changes back to 60 after reboot!!! Could that be mentioned somewhere maybe??
 
 2. Show the mount attributes of all volumes
 ```
