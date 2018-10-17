@@ -17,9 +17,6 @@
   * Deploy and activate CDH services<p>
 
 ---
-* For today's lab, we'll just [add a MySQL replica server](http://dev.mysql.com/doc/refman/5.5/en/replication-howto.html)
-
----
 <div style="page-break-after: always;"></div>
 
 ## <center> CM Install Lab - Prepare EC2 or other instances
@@ -32,8 +29,10 @@
 * Security group - mine (all access from everywhere)
 * After creation fix volume: https://github.com/chef-partners/omnibus-marketplace/issues/34
 * Upload key to "/tmp/Natalia.pem", do:
-```ssh-agent bash
-ssh-add /tmp/Natalia.pem```
+```
+ssh-agent bash
+ssh-add /tmp/Natalia.pem
+```
 * If you want, install ansible (for further reference: https://docs.ansible.com/ansible/2.5/user_guide/intro_getting_started.html ):
 ```
 yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
@@ -45,9 +44,11 @@ ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko 
 ```
 * Run installation/tools/checks.sh on every host
 * Check date on every host, maybe check ntpd:
-```chkconfig --list ntp
+```
+chkconfig --list ntp
 ntpq -p
-ntpdate pool.ntp.org```
+ntpdate pool.ntp.org
+```
 * Upload repos from challenges/mine/repos to every host
 * yum update on every host
 
@@ -56,24 +57,25 @@ ntpdate pool.ntp.org```
 ## <center> Troubleshooting
 
 * If port not accessible:
-```service iptables stop
-chkconfig iptables off```
+```
+service iptables stop
+chkconfig iptables off
+```
 * If cloudera Error accessing DB: (1251, 'Client does not support authentication protocol requested by server; consider upgrading MySQL client'):
- * https://github.com/mysqljs/mysql/pull/1962#issuecomment-390900841 - the most weird fucking shit ever
+   * https://github.com/mysqljs/mysql/pull/1962#issuecomment-390900841 - the most weird fucking shit ever
 
 ---
 <div style="page-break-after: always;"></div>
 
-## <center> MySQL/MariaDB Installation Lab
-
-Choose one of these plans to follow:
+## <center> MySQL/MariaDB Installation
 
 * https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_mysql.html
 * Everywhere: yum -y install mysql
 * On first two servers: yum -y install mysql-server
-* Download and copy the JDBC connector everywehre: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-binary-installation.html
+* Download and copy the JDBC connector everywhere: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-binary-installation.html
 * Change /etc/my.cnf:
-```datadir=/var/lib/mysql
+```
+datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
@@ -90,7 +92,7 @@ server-id=1
 * Do "cat head /var/log/mysqld.log", find password for root
 * Do "/usr/bin/mysql_secure_installation", change pass for root, revoke anon. users, permit remote, remove test db, refresh
 * In mysql execute challenges/mine/mysql_create_db.txt in mysql (only on master)
-* Replication:
+* Replication ( http://dev.mysql.com/doc/refman/5.5/en/replication-howto.html ):
 ```
  on master (put replica priv. DNS there):
 create user 'replica'@'private DNS' identified by 'replica';
@@ -105,12 +107,14 @@ START SLAVE;
 SHOW SLAVE STATUS\G
 ```
 * https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_installing_configuring_dbs.html#concept_mff_xjm_hn
-``` in there:
+```
+in there:
  /usr/share/cmf/schema/scm_prepare_database.sh database-type [options] database-name username password
  for me:
- /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm```
+ /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm
+ ```
 * Install Oracle JDK - JDBC driver: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cdh_ig_jdk_installation.html#topic_29_1
- * https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#id_qpq_lnm_25
+   * https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#id_qpq_lnm_25
 
 ---
 <div style="page-break-after: always;"></div>
@@ -119,7 +123,7 @@ SHOW SLAVE STATUS\G
 
 * http://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#concept_qyv_bt1_v5
 
-Ensure you adhere to the following requirements:
+Requirements:
 
 * Do not use Single User Mode. Do not. Don't do it.
 * Use only Cloudera's standard repositories
