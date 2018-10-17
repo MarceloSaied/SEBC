@@ -1,0 +1,32 @@
+set global validate_password.policy='LOW'
+set global validate_password.length=3
+set global validate_password.number_count=0
+set global validate_password.mixed_case_count=0
+set global validate_password.special_char_count=0
+create user 'hue'@'%' identified by 'hue';
+create database hue DEFAULT CHARACTER SET utf8;
+grant all on hue.* to 'hue'@'%';
+create user 'amon'@'%' identified by 'amon';
+create database amon DEFAULT CHARACTER SET utf8;
+grant all on amon.* to 'amons'@'%';
+create user 'rman'@'%' identified by 'rman';
+create database rman DEFAULT CHARACTER SET utf8;
+grant all on rman.* to 'rman'@'%';
+create user 'scm'@'%' identified by 'scm';
+create database scm DEFAULT CHARACTER SET utf8;
+grant all on scm.* to 'scm'@'%';
+create user 'hive'@'%' identified by 'hive';
+create database metastore DEFAULT CHARACTER SET utf8;
+grant all on metastore.* to 'hive'@'%';
+create user 'sentry'@'%' identified by 'sentry';
+create database sentry DEFAULT CHARACTER SET utf8;
+grant all on sentry.* to 'sentry'@'%';
+create user 'nav'@'%' identified by 'nav';
+create database nav DEFAULT CHARACTER SET utf8;
+grant all on nav.* to 'nav'@'%';
+create user 'navms'@'%' identified by 'navms';
+create database navms DEFAULT CHARACTER SET utf8;
+grant all on navms.* to 'navms'@'%';
+create user 'oozie'@'%' identified by 'oozie';
+create database oozie DEFAULT CHARACTER SET utf8;
+grant all on oozie.* to 'oozie'@'%';
