@@ -10,6 +10,7 @@ echo -e "----------------------------------------------------------- checking --
 echo -e "\n1. Swappiness:"
 cat /proc/sys/vm/swappiness
 sysctl -w vm.swappiness=1
+echo "vm.swappiness = 1" >> /etc/sysctl.conf
 echo -e "\nSwappiness changed to"
 cat /proc/sys/vm/swappiness
 echo -e "\n2. Mount"
