@@ -24,22 +24,20 @@ chkconfig iptables off
 * Volume 30 Gb
 * Security group - mine (all access from everywhere)
 * After creation fix volume: https://github.com/chef-partners/omnibus-marketplace/issues/34
-* Upload key to "/tmp/Natalia.pem", do:
+   * yum install -y cloud-utils-growpart
+   * sudo growpart /dev/xvda 1
+   * reboot
+* Upload key to "/tmp/Natalia.pem"
+* Run challenges/mine/start.sh, it installs ansible
+* Ansible set up (for further reference: https://docs.ansible.com/ansible/2.5/user_guide/intro_getting_started.html ):
+   * Create file "all_hosts" and put IPs of cluster hosts, one on every line
+   * Example usage:
 ```
-ssh-agent bash
-ssh-add /tmp/Natalia.pem
-```
-* If you want, install ansible (for further reference: https://docs.ansible.com/ansible/2.5/user_guide/intro_getting_started.html ):
-```
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-yum -y update
-yum -y install ansible
- Create file hosts and put IPs of cluster hosts, one on every line. Example usage:
 ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
 (ANSIBLE_DEBUG=1 ansible ...)
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m copy -a 'src=test dest=/etc/test'
 ```
-* Run installation/tools/checks.sh on every host
+* Run challenges/mine/checks.sh on every host
 * Check date on every host, maybe check ntpd:
 ```
 chkconfig --list ntp
