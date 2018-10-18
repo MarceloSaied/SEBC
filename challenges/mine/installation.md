@@ -2,19 +2,15 @@
 
 ---
 <div style="page-break-after: always;"></div>
+## <center> Troubleshooting
 
-## <center> <a name="cm_install_milestones"/> Installation Checkpoints with Path B []()
-
-* Careful review of hardware, OS, disk, and network/kernel settings
-* Install supported Oracle JDK
-* Install/configure [database server](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_ig_installing_configuring_dbs.html?scroll=cmig_topic_5_2_unique_1#cmig_topic_5_1_unique_1)
-  * Configure server to customer requirements
-* Create databases, connect the CM server to them
-    * Accessing MySQL requires a JDBC connector
-* CM will then
-  * Distribute agent software
-  * Distribute CDH software
-  * Deploy and activate CDH services<p>
+* If port not accessible:
+```
+service iptables stop
+chkconfig iptables off
+```
+* If cloudera Error accessing DB: (1251, 'Client does not support authentication protocol requested by server; consider upgrading MySQL client'):
+   * https://github.com/mysqljs/mysql/pull/1962#issuecomment-390900841 - the most weird fucking shit ever
 
 ---
 <div style="page-break-after: always;"></div>
@@ -38,7 +34,7 @@ ssh-add /tmp/Natalia.pem
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum -y update
 yum -y install ansible
- Create file hosts and put IPs of cluster hosts, one on every line
+ Create file hosts and put IPs of cluster hosts, one on every line. Example usage:
 ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
 (ANSIBLE_DEBUG=1 ansible ...)
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m copy -a 'src=test dest=/etc/test'
@@ -51,19 +47,8 @@ ntpq -p
 ntpdate pool.ntp.org
 ```
 * Upload repos from challenges/mine/repos to every host
+   * In the shitty case of another OS or what - other repos: https://www.cloudera.com/documentation/enterprise/release-notes/topics/cm_vd.html
 * yum -y update on every host
-
----
-<div style="page-break-after: always;"></div>
-## <center> Troubleshooting
-
-* If port not accessible:
-```
-service iptables stop
-chkconfig iptables off
-```
-* If cloudera Error accessing DB: (1251, 'Client does not support authentication protocol requested by server; consider upgrading MySQL client'):
-   * https://github.com/mysqljs/mysql/pull/1962#issuecomment-390900841 - the most weird fucking shit ever
 
 ---
 <div style="page-break-after: always;"></div>
@@ -114,8 +99,9 @@ in there:
  for me:
  /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm
  ```
-* Install Oracle JDK - JDBC driver: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cdh_ig_jdk_installation.html#topic_29_1
-   * https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#id_qpq_lnm_25
+* Install Oracle JDK - JDBC driver: 
+   * yum install -y oracle-j2sdk1.7
+   * Hopefully will not need manual: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cdh_ig_jdk_installation.html#topic_29_1
 
 ---
 <div style="page-break-after: always;"></div>
@@ -138,8 +124,23 @@ Requirements:
 ---
 <div style="page-break-after: always;"></div>
 
+## <center> Teragen, terasort, distcp
+
+* For reference: http://blobseer.gforge.inria.fr/doku.php?id=tutorial:terabenchmark
+* Do not set the number of mappers for terasort  - it has no effect. It will create as many mappers as many blocks of the input files.
+
+```
+HADOOP_USER_NAME=hdfs hadoop distcp hdfs://ec2-18-196-102-174.eu-central-1.compute.amazonaws.com:8022/tmp/olgierdg /copy
+HADOOP_USER_NAME=skalolazka time hadoop jar /opt/cloudera/parcels/CDH-5.8.5-1.cdh5.8.5.p0.5/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar teragen -Dmapred.map.tasks=4 -Ddfs.block.size=33554432 100000000 /user/skalolazka/teragen
+HADOOP_USER_NAME=skalolazka time hadoop jar /opt/cloudera/parcels/CDH-5.8.5-1.cdh5.8.5.p0.5/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar terasort /user/skalolazka/teragen
+```
+
+---
+<div style="page-break-after: always;"></div>
+
 ## <center> Kerberos - set up KDC
 
+* For reference: https://web.mit.edu/kerberos/krb5-latest/doc/admin/install_kdc.html
 * On the KDC host: yum install -y krb5-server krb5-libs krb5-auth-dialog
 * Everywhere: yum install -y krb5-workstation krb5-libs krb5-auth-dialog openldap-clients
 * Take /etc/krb5.conf from repo
@@ -150,7 +151,31 @@ Requirements:
 * kadmin.local, in there "addprinc cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera"
 * Run /usr/sbin/krb5kdc
 * Run /usr/sbin/kadmind
+* Check they started:
+```
+shell% tail /var/log/krb5kdc.log
+Dec 02 12:35:47 beeblebrox krb5kdc[3187](info): commencing operation
+shell% tail /var/log/kadmin.log
+Dec 02 12:35:52 beeblebrox kadmind[3189](info): starting
+```
 * Check it works: "kinit cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera" from any machine in cluster!
+
+---
+<div style="page-break-after: always;"></div>
+
+## <center> Kerberos in Cloudera
+
+* For reference https://www.cloudera.com/documentation/enterprise/5-9-x/topics/cm_sg_s4_kerb_wizard.html
+* Realm EU-CENTRAL-1.COMPUTE.INTERNAL
+* Internal address
+* Leave rc4-hmac
+* Kerberos Renewable Lifetime 7 days
+* Do NOT Manage krb5.conf through Cloudera Manager
+* KDC Account Manager Credentials - "cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera"
+* If not enctype rc4-hmac, and "aes"-types don't work, then download jars:
+   * https://s3.eu-central-1.amazonaws.com/natalia-sebc/US_export_policy.jar
+   * https://s3.eu-central-1.amazonaws.com/natalia-sebc/local_policy.jar
+   * ...and put them to /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/ on every host!
 
 ---
 <div style="page-break-after: always;"></div>
@@ -182,18 +207,6 @@ ansible -i /home/centos/all_hosts all --user centos --private-key /tmp/Natalia.p
    * TLS/SSL Client Truststore File Password - changeit
 * Restart Cloudera management services
 * IMPORTANT: Don't forget to "service cloudera-scm-server restart" - maybe even before restarting the management services in the web interface
-
----
-<div style="page-break-after: always;"></div>
-
-## <center> Kerberos in Cloudera
-
-* Realm EU-CENTRAL-1.COMPUTE.INTERNAL
-* Internal address
-* Leave rc4-hmac
-* Kerberos Renewable Lifetime 7 days
-
-
 
 
 
