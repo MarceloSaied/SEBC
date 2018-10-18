@@ -35,11 +35,11 @@ ssh-add /tmp/Natalia.pem
 ```
 * If you want, install ansible (for further reference: https://docs.ansible.com/ansible/2.5/user_guide/intro_getting_started.html ):
 ```
-yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-yum update
-yum install ansible
- Create file hosts and put IPs of cluster hosts, one on every line
-ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+yum -y update
+yum -y install ansible
+ Create file all_hosts and put IPs of cluster hosts, one on every line
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
 (ANSIBLE_DEBUG=1 ansible ...)
 ```
 * Run installation/tools/checks.sh on every host
@@ -50,7 +50,7 @@ ntpq -p
 ntpdate pool.ntp.org
 ```
 * Upload repos from challenges/mine/repos to every host
-* yum update on every host
+* yum -y update on every host
 
 ---
 <div style="page-break-after: always;"></div>
