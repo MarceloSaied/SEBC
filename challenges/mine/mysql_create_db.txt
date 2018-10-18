@@ -1,8 +1,8 @@
-set global validate_password.policy='LOW'
-set global validate_password.length=3
-set global validate_password.number_count=0
-set global validate_password.mixed_case_count=0
-set global validate_password.special_char_count=0
+set global validate_password.policy='LOW';
+set global validate_password.length=3;
+set global validate_password.number_count=0;
+set global validate_password.mixed_case_count=0;
+set global validate_password.special_char_count=0;
 create user 'hue'@'%' identified by 'hue';
 create database hue DEFAULT CHARACTER SET utf8;
 grant all on hue.* to 'hue'@'%';
