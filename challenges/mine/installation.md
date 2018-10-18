@@ -2,6 +2,7 @@
 
 ---
 <div style="page-break-after: always;"></div>
+
 ## <center> Troubleshooting
 
 * If port not accessible:
@@ -16,6 +17,7 @@ chkconfig iptables off
 
 ---
 <div style="page-break-after: always;"></div>
+
 ## <center> Miscellaneous
 
 * Add system user with uid: useradd -u 500 someuser
