@@ -11,6 +11,17 @@ chkconfig iptables off
 ```
 * If cloudera Error accessing DB: (1251, 'Client does not support authentication protocol requested by server; consider upgrading MySQL client'):
    * https://github.com/mysqljs/mysql/pull/1962#issuecomment-390900841 - the most weird fucking shit ever
+* If yum not working ("Database Disk Image is Malformed"):
+   * yum clean dbcache
+
+---
+<div style="page-break-after: always;"></div>
+## <center> Miscellaneous
+
+* Add system user with uid: useradd -u 500 someuser
+* Add group: groupadd somegroup
+* Add user to group: usermod -a -G somegroup someuser
+* Check those: getent group | grep somegroup, tail /etc/group, tail /etc/passwd
 
 ---
 <div style="page-break-after: always;"></div>
@@ -22,7 +33,7 @@ chkconfig iptables off
 * AMI CentOS Linux 6 x86_64 HVM EBS ENA
 * Type m4.xlarge, NOT spot
 * Volume 30 Gb
-* Security group - mine (all access from everywhere)
+* Security group - olaf-cloudera
 * After creation fix volume: https://github.com/chef-partners/omnibus-marketplace/issues/34
    * yum install -y cloud-utils-growpart
    * sudo growpart /dev/xvda 1
@@ -30,21 +41,26 @@ chkconfig iptables off
 * Upload key to "/tmp/Natalia.pem"
 * Run challenges/mine/start.sh, it installs ansible
 * Ansible set up (for further reference: https://docs.ansible.com/ansible/2.5/user_guide/intro_getting_started.html ):
-   * Create file "all_hosts" and put IPs of cluster hosts, one on every line
+   * Create file "all_hosts" and put internal IPs of cluster hosts, one on every line
+   * TODO https://askubuntu.com/questions/87449/how-to-disable-strict-host-key-checking-in-ssh/87452#87452 - or otherwise you have to ssh everywhere to check: "ssh -i /tmp/Natalia.pem centos@..." - you have to answer "yes"
    * Example usage:
 ```
-ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
 (ANSIBLE_DEBUG=1 ansible ...)
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m copy -a 'src=test dest=/etc/test'
 ```
-* Run challenges/mine/checks.sh on every host
+* Run challenges/mine/checks.sh on every host:
+```
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /home/centos/checks.sh https://raw.githubusercontent.com/skalolazka/SEBC/master/challenges/mine/scripts/checks.sh'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sh /home/centos/checks.sh'
+```
 * Check date on every host, maybe check ntpd:
 ```
 chkconfig --list ntp
 ntpq -p
 ntpdate pool.ntp.org
 ```
-* Upload repos from challenges/mine/repos to every host
+* NOOOOOOOOOOOOOOO NOT YET Upload repos from challenges/mine/repos to every host
    * In the shitty case of another OS or what - other repos: https://www.cloudera.com/documentation/enterprise/release-notes/topics/cm_vd.html
 * yum -y update on every host
 
@@ -53,60 +69,66 @@ ntpdate pool.ntp.org
 
 ## <center> MySQL/MariaDB Installation
 
-* https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_mysql.html
-* Everywhere: yum -y install mysql
-* On first two servers: yum -y install mysql-server
-* Download and copy the JDBC connector everywhere: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-binary-installation.html
-* Change /etc/my.cnf:
+* For reference: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_mysql.html
+* For JDBC connector reference: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-binary-installation.html
+* Run all commands from challenges/mine/scripts/mysql.sh, one command at a time unfortunately
+* On main server and the replica server change /etc/my.cnf - do not forget to set unique server-id  (in the end):
 ```
-datadir=/var/lib/mysql
-socket=/var/lib/mysql/mysql.sock
-log-error=/var/log/mysqld.log
-pid-file=/var/run/mysqld/mysqld.pid
 transaction_isolation = READ-COMMITTED
 default-storage-engine=InnoDB
 innodb_flush_method=O_DIRECT
 max_connections=650
 log-bin=mysql-bin
 server-id=1
-
- do not forget unique server-id (master and replica) and log-bin
 ```
-* service mysqld start
-* Do "cat head /var/log/mysqld.log", find password for root
-* Do "/usr/bin/mysql_secure_installation", change pass for root, revoke anon. users, permit remote, remove test db, refresh
-* In mysql execute challenges/mine/mysql_create_db.txt in mysql (only on master)
-* Replication ( http://dev.mysql.com/doc/refman/5.5/en/replication-howto.html ):
+* On main server and replica:
+   * service mysqld start
+   * Do "head /var/log/mysqld.log", find password for root
+   * With it do "/usr/bin/mysql_secure_installation", change pass for root (type in that pass, then new pass "Sebc2018!", then "no", revoke anon. users "y", permit remote "n", remove test db "y", reload "y")
+* On master: in mysql execute challenges/mine/mysql_create_db.txt
+   * Either just copy as text, or this should work: mysql -u root -p < mysql_create_db.txt
+* Replication - HONESTLY, FUCK THIS SHIT HERE - don't forget to change private DNS in the code here ( http://dev.mysql.com/doc/refman/5.5/en/replication-howto.html ):
+   *  on master (put replica priv. DNS there):
 ```
- on master (put replica priv. DNS there):
 create user 'replica'@'private DNS' identified by 'replica';
 GRANT REPLICATION SLAVE ON *.* TO 'replica'@'private DNS';
 SET GLOBAL binlog_format = 'ROW';
 FLUSH TABLES WITH READ LOCK;
 SHOW MASTER STATUS;
 UNLOCK TABLES;
- on replica (put values from "show master status"):
+FLUSH PRIVILEGES;
+```
+   * on replica (put values from "show master status"):
+```
 CHANGE MASTER TO MASTER_HOST='master private DNS', MASTER_USER='replica', MASTER_PASSWORD='replica', MASTER_LOG_FILE='from show master status', MASTER_LOG_POS=from show master status;
 START SLAVE;
 SHOW SLAVE STATUS\G
 ```
-* https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_installing_configuring_dbs.html#concept_mff_xjm_hn
+* Install Oracle JDK - JDBC driver:
 ```
-in there:
- /usr/share/cmf/schema/scm_prepare_database.sh database-type [options] database-name username password
- for me:
- /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm
- ```
-* Install Oracle JDK - JDBC driver: 
-   * yum install -y oracle-j2sdk1.7
-   * Hopefully will not need manual: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cdh_ig_jdk_installation.html#topic_29_1
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /etc/yum.repos.d/cdh.repo https://raw.githubusercontent.com/skalolazka/SEBC/master/challenges/mine/repos/cdh.repo'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /etc/yum.repos.d/cm.repo https://raw.githubusercontent.com/skalolazka/SEBC/master/challenges/mine/repos/cm.repo'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'yum -y update'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'yum install -y oracle-j2sdk1.7'
+```
+   * (Hopefully will not need manual installation for JDK: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cdh_ig_jdk_installation.html#topic_29_1 )
 
 ---
 <div style="page-break-after: always;"></div>
 
 ## <center> CM/CDH Installation Path B install using Cloudera 5.8.3
 
-* http://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#concept_qyv_bt1_v5
+* For reference: http://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_install_path_b.html#concept_qyv_bt1_v5
+* On main server: yum -y install cloudera-manager-daemons cloudera-manager-server
+* On main server: service cloudera-scm-server start
+* On main server: from here: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_installing_configuring_dbs.html#concept_mff_xjm_hn
+```
+in there:
+ /usr/share/cmf/schema/scm_prepare_database.sh database-type [options] database-name username password
+ for me:
+ /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm
+ ```
+* Go to url, user admin, pass admin
 
 Requirements:
 
