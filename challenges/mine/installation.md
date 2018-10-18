@@ -38,9 +38,10 @@ ssh-add /tmp/Natalia.pem
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum -y update
 yum -y install ansible
- Create file all_hosts and put IPs of cluster hosts, one on every line
-ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
+ Create file hosts and put IPs of cluster hosts, one on every line
+ansible -i a_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'sysctl -w vm.swappiness=1'
 (ANSIBLE_DEBUG=1 ansible ...)
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m copy -a 'src=test dest=/etc/test'
 ```
 * Run installation/tools/checks.sh on every host
 * Check date on every host, maybe check ntpd:
@@ -132,3 +133,88 @@ Requirements:
 * Install CDH using parcels
 * Deploy **only** the `Coreset` of CDH services.
 * Deploy three ZooKeeper instances (CM does not prompts you to do this)
+* IMPORTANT! Install the Cloudera Management Services on the host where Cloudera Manager is! That means the number 1, or the one in the url, not the first one in this list on the page!!!
+
+---
+<div style="page-break-after: always;"></div>
+
+## <center> Kerberos - set up KDC
+
+* On the KDC host: yum install -y krb5-server krb5-libs krb5-auth-dialog
+* Everywhere: yum install -y krb5-workstation krb5-libs krb5-auth-dialog openldap-clients
+* Take /etc/krb5.conf from repo
+* Copy /etc/krb5.conf to every machine in cluster
+* Take /var/kerberos/krb5kdc/kdc.conf from repo
+* Take /var/kerberos/krb5kdc/kadm5.acl from repo
+* kdb5_util create -r EU-CENTRAL-1.COMPUTE.INTERNAL -s
+* kadmin.local, in there "addprinc cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera"
+* Run /usr/sbin/krb5kdc
+* Run /usr/sbin/kadmind
+* Check it works: "kinit cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera" from any machine in cluster!
+
+---
+<div style="page-break-after: always;"></div>
+
+## <center> TLS (goddamit!!!)
+
+* For reference this guide https://www.cloudera.com/documentation/enterprise/5-9-x/topics/cm_sg_tls_browser.html , but step 1 entirely changed to...
+* ... to self-signed: https://www.cloudera.com/documentation/enterprise/5-9-x/topics/sg_self_signed_tls.html
+* On the cloudera manager host (don't forget to change value for genkeypair):
+```
+mkdir -p /opt/cloudera/security/x509/ /opt/cloudera/security/jks/
+cd /opt/cloudera/security/jks
+chown -R cloudera-scm:cloudera-scm /opt/cloudera/security/jks
+export JAVA_HOME=/usr/java/jdk1.7.0_67-cloudera
+$JAVA_HOME/bin/keytool -genkeypair -alias $(hostname -f) -keyalg RSA -keysize 2048 -dname "cn=ec2-18-184-40-204.eu-central-1.compute.amazonaws.com, ou=, o=, l=, st=, c=" -keypass cloudera -keystore with_external.jks -storepass cloudera -ext san=$(hostname -f)
+cp $JAVA_HOME/jre/lib/security/cacerts $JAVA_HOME/jre/lib/security/jssecacerts
+$JAVA_HOME/bin/keytool -export -alias $(hostname -f) -keystore with_external.jks -rfc -file selfsigned.cer
+cp selfsigned.cer /opt/cloudera/security/x509/$(hostname -f).pem
+$JAVA_HOME/bin/keytool -import -alias $(hostname -f) -file /opt/cloudera/security/jks/selfsigned.cer -keystore $JAVA_HOME/jre/lib/security/jssecacerts -storepass changeit
+ansible -i /home/centos/all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m copy -a 'src=/usr/java/jdk1.7.0_67-cloudera/jre/lib/security/jssecacerts dest=/usr/java/jdk1.7.0_67-cloudera/jre/lib/security/jssecacerts'
+```
+* Pay attention that the storepass is "changeit", my pass is "cloudera".
+* Set values in Administration - Settings
+   * Use TLS Encryption for Admin Console - checked
+   * Cloudera Manager TLS/SSL Server JKS Keystore File Location - /opt/cloudera/security/jks/with_external.jks
+   * Cloudera Manager TLS/SSL Server JKS Keystore File Password - cloudera
+* Set values in Cloudera management services settings
+   * TLS/SSL Client Truststore File Location - /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/jssecacerts
+   * TLS/SSL Client Truststore File Password - changeit
+* Restart Cloudera management services
+* IMPORTANT: Don't forget to "service cloudera-scm-server restart" - maybe even before restarting the management services in the web interface
+
+---
+<div style="page-break-after: always;"></div>
+
+## <center> Kerberos in Cloudera
+
+* Realm EU-CENTRAL-1.COMPUTE.INTERNAL
+* Internal address
+* Leave rc4-hmac
+* Kerberos Renewable Lifetime 7 days
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
