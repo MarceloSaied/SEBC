@@ -4,10 +4,7 @@
 ip-172-31-38-212.eu-central-1.compute.internal
 ```
 * The command screenshot to display the DB version
-```
-# mysql --version
-mysql  Ver 8.0.12 for Linux on x86_64 (MySQL Community Server - GPL)
-```
+![alt text](https://github.com/skalolazka/SEBC/blob/master/challenges/labs/mysql.PNG?raw=true)
 * The command and output for listing databases
 ```
 mysql> show databases;
