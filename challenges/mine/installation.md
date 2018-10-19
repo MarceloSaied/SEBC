@@ -216,9 +216,8 @@ Dec 02 12:35:52 beeblebrox kadmind[3189](info): starting
 * Do NOT Manage krb5.conf through Cloudera Manager
 * KDC Account Manager Credentials - "cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera"
 * If not enctype rc4-hmac, and "aes"-types don't work, then download jars:
-   * https://s3.eu-central-1.amazonaws.com/natalia-sebc/US_export_policy.jar
-   * https://s3.eu-central-1.amazonaws.com/natalia-sebc/local_policy.jar
-   * ...and put them to /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/ on every host!
+   * ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/US_export_policy.jar https://s3.eu-central-1.amazonaws.com/natalia-sebc/US_export_policy.jar'
+   * ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/local_policy.jar https://s3.eu-central-1.amazonaws.com/natalia-sebc/local_policy.jar'
 
 ---
 <div style="page-break-after: always;"></div>
