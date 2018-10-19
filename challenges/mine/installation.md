@@ -146,10 +146,11 @@ ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramik
 * Repos CDH and CM were already uploaded in MySQL step, BUT:
    * In the shitty case of another OS or what - other repos: https://www.cloudera.com/documentation/enterprise/release-notes/topics/cm_vd.html
 * On main server: yum -y install cloudera-manager-daemons cloudera-manager-server
-* On main server: service cloudera-scm-server start
 * On main server: from here: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_installing_configuring_dbs.html#concept_mff_xjm_hn
    * /usr/share/cmf/schema/scm_prepare_database.sh mysql scm scm scm
    * (in documentation: /usr/share/cmf/schema/scm_prepare_database.sh database-type [options] database-name username password )
+   * If db on another host, in options "-h internal_DNS"
+* On main server: service cloudera-scm-server start
 * Go to url, port 7180, user admin, pass admin
 
 Requirements:
