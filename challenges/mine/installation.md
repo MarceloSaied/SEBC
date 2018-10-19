@@ -91,6 +91,7 @@ ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramik
 ## <center> MySQL/MariaDB Installation
 
 * For reference: https://www.cloudera.com/documentation/enterprise/5-8-x/topics/cm_ig_mysql.html
+* Check if version supported: https://www.cloudera.com/documentation/enterprise/release-notes/topics/rn_consolidated_pcm.html
 * PAY ATTENTION if they want you to install MySQL NOT on Cloudera Manager host
 * For JDBC connector reference: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-binary-installation.html
 * Run all commands from challenges/mine/scripts/mysql.sh, one command at a time unfortunately
