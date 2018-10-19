@@ -9,4 +9,4 @@ ansible -i short_hosts all --user centos --private-key /tmp/Natalia.pem -c param
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /home/centos/mysql-connector https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz'
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'tar -zxf /home/centos/mysql-connector -C /tmp/'
 ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'mkdir -p /usr/share/java/'
-ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'cp /tmp/mysql-connector-java-5.1.47/mysql-connector-java-5.1.31-bin.jar /usr/share/java/mysql-connector-java.jar'
+ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'cp /tmp/mysql-connector-java-5.1.47/mysql-connector-java-5.1.47-bin.jar /usr/share/java/mysql-connector-java.jar'
