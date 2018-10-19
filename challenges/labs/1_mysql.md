@@ -9,6 +9,7 @@ ip-172-31-38-212.eu-central-1.compute.internal
 mysql  Ver 8.0.12 for Linux on x86_64 (MySQL Community Server - GPL)
 ```
 * The command and output for listing databases
+```
 mysql> show databases;
 +--------------------+
 | Database           |
@@ -28,4 +29,5 @@ mysql> show databases;
 | sys                |
 +--------------------+
 13 rows in set (0.00 sec)
+```
 * Remark: yes, I created more databases, no one said I shouldn't=)
