@@ -54,3 +54,49 @@ extras                                             CentOS-6 - Extras            
 updates                                            CentOS-6 - Updates                                                                           205
 repolist: 19,466
 ```
+* List the /etc/passwd entries for raffles and fullerton in your setup file
+```
+# ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'tail -n2  /etc/passwd'
+172.31.45.88 | SUCCESS | rc=0 >>
+raffles:x:2000:2000::/home/raffles:/bin/bash
+fullerton:x:3000:3000::/home/fullerton:/bin/bash
+
+172.31.40.36 | SUCCESS | rc=0 >>
+raffles:x:2000:2000::/home/raffles:/bin/bash
+fullerton:x:3000:3000::/home/fullerton:/bin/bash
+
+172.31.38.212 | SUCCESS | rc=0 >>
+raffles:x:2000:2000::/home/raffles:/bin/bash
+fullerton:x:3000:3000::/home/fullerton:/bin/bash
+
+172.31.45.243 | SUCCESS | rc=0 >>
+raffles:x:2000:2000::/home/raffles:/bin/bash
+fullerton:x:3000:3000::/home/fullerton:/bin/bash
+
+172.31.41.184 | SUCCESS | rc=0 >>
+raffles:x:2000:2000::/home/raffles:/bin/bash
+fullerton:x:3000:3000::/home/fullerton:/bin/bash
+```
+* List the /etc/group entries for hotels and shops in your setup file
+```
+# ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'tail -n2 /etc/group'
+172.31.41.184 | SUCCESS | rc=0 >>
+hotels:x:3001:fullerton
+shops:x:3002:raffles
+
+172.31.45.243 | SUCCESS | rc=0 >>
+hotels:x:3001:fullerton
+shops:x:3002:raffles
+
+172.31.40.36 | SUCCESS | rc=0 >>
+hotels:x:3001:fullerton
+shops:x:3002:raffles
+
+172.31.38.212 | SUCCESS | rc=0 >>
+hotels:x:3001:fullerton
+shops:x:3002:raffles
+
+172.31.45.88 | SUCCESS | rc=0 >>
+hotels:x:3001:fullerton
+shops:x:3002:raffles
+```
