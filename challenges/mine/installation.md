@@ -215,9 +215,8 @@ Dec 02 12:35:52 beeblebrox kadmind[3189](info): starting
 * Kerberos Renewable Lifetime 7 days
 * Do NOT Manage krb5.conf through Cloudera Manager
 * KDC Account Manager Credentials - "cloudera-scm/admin@EU-CENTRAL-1.COMPUTE.INTERNAL" with password "cloudera"
-* If not enctype rc4-hmac, and "aes"-types don't work, then download jars:
-   * ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/US_export_policy.jar https://s3.eu-central-1.amazonaws.com/natalia-sebc/US_export_policy.jar'
-   * ansible -i all_hosts all --user centos --private-key /tmp/Natalia.pem -c paramiko --become -m shell -a 'wget -O /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/local_policy.jar https://s3.eu-central-1.amazonaws.com/natalia-sebc/local_policy.jar'
+* If not enctype rc4-hmac, and "aes"-types don't work, then download jars for Unlimited Strength Java Cryptography Extension. I had them on S3, but removed, so unfortunately https://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html or Google. On every machine! put the jars (US_export_policy.jar and local_policy.jar) to /usr/java/jdk1.7.0_67-cloudera/jre/lib/security/ .
+   * TODO: check this out: https://stackoverflow.com/questions/25959948/local-policy-jar-and-us-export-policy-jar-different-with-unlimited-strength-vs-d - there should be a better way to do this.
 
 ---
 <div style="page-break-after: always;"></div>
